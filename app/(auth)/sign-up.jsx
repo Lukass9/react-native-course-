@@ -6,32 +6,34 @@ import { images } from "../../constants";
 import CustomButton from "@/components/CustomButton";
 import { Link, router } from "expo-router";
 import { createUser } from "../../lib/appwrite";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const SignUp = () => {
+  const { setUser, setIsLogged } = useGlobalContext();
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
-    if (!form.username || !form.email || !form.password) {
+    if (form.username === "" || form.email === "" || form.password === "") {
       Alert("Error", "Please fill in all the fields");
     }
 
-    setIsSubmitting(true);
+    setSubmitting(true);
 
     try {
       const result = await createUser(form.email, form.password, form.username);
-
-      // set is global state ...
+      setUser(result);
+      setIsLogged(true);
 
       router.replace("/home");
     } catch (error) {
       Alert("Error", error.message);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -75,7 +77,7 @@ const SignUp = () => {
             title='Sign up'
             handlePress={submit}
             containerStyle='mt-7'
-            isLoading={isSubmitting}
+            isLoading={submitting}
           />
 
           <View className='flex justify-center pt-5 flex-row gap-2'>

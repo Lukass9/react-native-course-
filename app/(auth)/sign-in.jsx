@@ -5,32 +5,36 @@ import FormField from "../../components/FormField";
 import { images } from "../../constants";
 import CustomButton from "@/components/CustomButton";
 import { Link, router } from "expo-router";
-import { signIn } from "../../lib/appwrite";
+import { getCurrentUser, signIn } from "../../lib/appwrite";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const SignIn = () => {
+  const { setUser, setIsLogged } = useGlobalContext();
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
-    if (!form.email || !form.password) {
+    if (form.email == "" || form.password == "") {
       Alert("Error", "Please fill in all the fields");
     }
 
-    setIsSubmitting(true);
+    setSubmitting(true);
 
     try {
       await signIn(form.email, form.password);
+      const result = await getCurrentUser();
+      setUser(result);
+      setIsLogged(true);
 
-      // set is global state ...
-
+      Alert("Success", "User singed in successfully");
       router.replace("/home");
     } catch (error) {
       Alert("Error", error.message);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -67,7 +71,7 @@ const SignIn = () => {
             title='Sign In'
             handlePress={submit}
             containerStyle='mt-7'
-            isLoading={isSubmitting}
+            isLoading={submitting}
           />
 
           <View className='flex justify-center pt-5 flex-row gap-2'>
